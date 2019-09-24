@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\AskQuestionRequest;
 use App\Question;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\View;
 
 class QuestionController extends Controller
 {
@@ -24,9 +26,10 @@ class QuestionController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function create()
+    public function create(Question $question)
     {
-        //
+        //$question = new Question();
+        return view('questions.create', compact('question'));
     }
 
     /**
@@ -35,9 +38,10 @@ class QuestionController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function store(AskQuestionRequest $request)
     {
-        //
+        $request->user()->questions()->create($request->only('title', 'body'));
+        return redirect()->route('questions.index')->with('success', "Your question has been submitted");
     }
 
     /**
@@ -48,7 +52,13 @@ class QuestionController extends Controller
      */
     public function show(Question $question)
     {
-        //
+        $question->increment('views');
+        //dd($question->body);
+        return view('questions.show', compact('question'));
+
+        //Equivalent increment function
+        //$question->views=$question->views+1;
+        //$question->save();
     }
 
     /**
@@ -59,7 +69,7 @@ class QuestionController extends Controller
      */
     public function edit(Question $question)
     {
-        //
+        return view("questions.edit", compact('question'));
     }
 
     /**
@@ -69,9 +79,11 @@ class QuestionController extends Controller
      * @param  \App\Question  $question
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, Question $question)
+    public function update(AskQuestionRequest $request, Question $question)
     {
-        //
+        $question->update($request->only('title', 'body'));
+
+        return redirect('/questions')->with('success', "Your question has been updated");
     }
 
     /**
@@ -82,6 +94,9 @@ class QuestionController extends Controller
      */
     public function destroy(Question $question)
     {
-        //
+        //$question = new Question(); 
+        $question->delete();
+
+        return redirect('/questions')->with('success', "Your question has been deleted");
     }
 }
